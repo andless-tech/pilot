@@ -5,68 +5,19 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef enum {
-    PILOT_SERVICE_RTC,
-    PILOT_SERVICE_SELFCHECK,
-    PILOT_SERVICE_FAN,
-    PILOT_SERVICE_MODEM,
-} pilot_service_id;
-typedef enum {
-    PILOT_METHOD_RTC_BATTERY_COMMAND,
-    PILOT_METHOD_RTC_GET_ACTIVE_ENDPOINT,
-    PILOT_METHOD_RTC_GET_CLOUD_STATUS,
-    PILOT_METHOD_RTC_GET_P2P_STATUS,
-    PILOT_METHOD_RTC_GET_ALL_STATUS,
-    PILOT_METHOD_RTC_GET_CONTROL_SIGNALS,
-    PILOT_METHOD_RTC_SET_CHANNEL_OUTPUT,
-    PILOT_METHOD_RTC_GET_IMU_DATA,
-    PILOT_METHOD_RTC_GET_DEVICE_PARAM,
-    PILOT_METHOD_RTC_GET_MAGNETOMETER_DATA,
-    PILOT_METHOD_RTC_GET_CELL_LOCATION,
-    PILOT_METHOD_RTC_GET_GPS_STATUS,
-    PILOT_METHOD_RTC_GET_CHANNEL_OUTPUT_STATUS,
-    PILOT_METHOD_RTC_BEGIN_CHANNEL_DEBUG,
-    PILOT_METHOD_RTC_SET_CHANNEL_DEBUG,
-    PILOT_METHOD_RTC_CHANNEL_DEBUG_KEEP_ALIVE,
-    PILOT_METHOD_RTC_END_CHANNEL_DEBUG,
-    PILOT_METHOD_RTC_GET_MEDIA_STATUS,
-    PILOT_METHOD_RTC_GET_AUDIO_SPECTRUM,
-    PILOT_METHOD_RTC_GET_AUDIO_VOLUME,
-    PILOT_METHOD_RTC_SET_AUDIO_VOLUME,
-    PILOT_METHOD_RTC_CAPTURE_CAMERA_PREVIEW,
-    PILOT_METHOD_RTC_GET_TRANSPORT_STATS,
-    PILOT_METHOD_RTC_GET_DIAGNOSTIC_STATS,
-    PILOT_METHOD_RTC_GET_NETWORK_DIAGNOSTICS,
-    PILOT_METHOD_RTC_REQUEST_RECONNECT,
-    PILOT_METHOD_SELFCHECK_GET_REPORT,
-    PILOT_METHOD_SELFCHECK_RUN_NOW,
-    PILOT_METHOD_SELFCHECK_GET_NETWORK_RECOVERY_POLICY,
-    PILOT_METHOD_SELFCHECK_SET_NETWORK_RECOVERY_MODE,
-    PILOT_METHOD_FAN_GET_CONFIG,
-    PILOT_METHOD_FAN_SET_CONFIG,
-} pilot_method_id;
-typedef enum {
-    PILOT_SIGNAL_RTC_CONTROL_SIGNALS_CHANGED,
-    PILOT_SIGNAL_RTC_IMU_DATA_CHANGED,
-    PILOT_SIGNAL_RTC_MAGNETOMETER_DATA_CHANGED,
-    PILOT_SIGNAL_RTC_ENDPOINT_STATE_CHANGED,
-    PILOT_SIGNAL_RTC_NETWORK_DIAGNOSTICS_CHANGED,
-    PILOT_SIGNAL_SELFCHECK_REPORT_CHANGED,
-    PILOT_SIGNAL_MODEM_CELL_INFO_CHANGED,
-} pilot_signal_id;
 typedef struct {
     const char * response;
-    pilot_reply *_reply;
-} pilot_rtc_battery_command_result;
-int pilot_rtc_battery_command(pilot_client *client, const char * request, pilot_rtc_battery_command_result *out, pilot_error *error);
-void pilot_rtc_battery_command_clear(pilot_rtc_battery_command_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_battery_request_result;
+PILOT_API void pilot_battery_request_clear(pilot_battery_request_result *out);
+PILOT_API int pilot_battery_request(pilot_client *client, const char * request, pilot_battery_request_result *out, pilot_error *error);
 
 typedef struct {
     int32_t index;
-    pilot_reply *_reply;
-} pilot_rtc_get_active_endpoint_result;
-int pilot_rtc_get_active_endpoint(pilot_client *client, pilot_rtc_get_active_endpoint_result *out, pilot_error *error);
-void pilot_rtc_get_active_endpoint_clear(pilot_rtc_get_active_endpoint_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_connection_get_active_result;
+PILOT_API void pilot_connection_get_active_clear(pilot_connection_get_active_result *out);
+PILOT_API int pilot_connection_get_active(pilot_client *client, pilot_connection_get_active_result *out, pilot_error *error);
 
 typedef struct {
     const char * type;
@@ -75,10 +26,10 @@ typedef struct {
     uint16_t port;
     int32_t subscribe_count;
     bool is_active;
-    pilot_reply *_reply;
-} pilot_rtc_get_cloud_status_result;
-int pilot_rtc_get_cloud_status(pilot_client *client, pilot_rtc_get_cloud_status_result *out, pilot_error *error);
-void pilot_rtc_get_cloud_status_clear(pilot_rtc_get_cloud_status_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_connection_get_relay_result;
+PILOT_API void pilot_connection_get_relay_clear(pilot_connection_get_relay_result *out);
+PILOT_API int pilot_connection_get_relay(pilot_client *client, pilot_connection_get_relay_result *out, pilot_error *error);
 
 typedef struct {
     const char * type;
@@ -87,33 +38,35 @@ typedef struct {
     uint16_t port;
     int32_t subscribe_count;
     bool is_active;
-    pilot_reply *_reply;
-} pilot_rtc_get_p2p_status_result;
-int pilot_rtc_get_p2p_status(pilot_client *client, pilot_rtc_get_p2p_status_result *out, pilot_error *error);
-void pilot_rtc_get_p2p_status_clear(pilot_rtc_get_p2p_status_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_connection_get_p2p_result;
+PILOT_API void pilot_connection_get_p2p_clear(pilot_connection_get_p2p_result *out);
+PILOT_API int pilot_connection_get_p2p(pilot_client *client, pilot_connection_get_p2p_result *out, pilot_error *error);
 
 typedef struct {
-    const pilot_value * endpoints;
+    const pilot_endpoint * endpoints;
+    size_t endpoints_count;
     int32_t active_index;
-    pilot_reply *_reply;
-} pilot_rtc_get_all_status_result;
-int pilot_rtc_get_all_status(pilot_client *client, pilot_rtc_get_all_status_result *out, pilot_error *error);
-void pilot_rtc_get_all_status_clear(pilot_rtc_get_all_status_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_connection_get_status_result;
+PILOT_API void pilot_connection_get_status_clear(pilot_connection_get_status_result *out);
+PILOT_API int pilot_connection_get_status(pilot_client *client, pilot_connection_get_status_result *out, pilot_error *error);
 
 typedef struct {
-    const pilot_value * signals;
+    const int32_t * signals;
+    size_t signals_count;
     int64_t last_rx_ms;
-    pilot_reply *_reply;
-} pilot_rtc_get_control_signals_result;
-int pilot_rtc_get_control_signals(pilot_client *client, pilot_rtc_get_control_signals_result *out, pilot_error *error);
-void pilot_rtc_get_control_signals_clear(pilot_rtc_get_control_signals_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_control_read_result;
+PILOT_API void pilot_control_read_clear(pilot_control_read_result *out);
+PILOT_API int pilot_control_read(pilot_client *client, pilot_control_read_result *out, pilot_error *error);
 
 typedef struct {
     bool applied;
-    pilot_reply *_reply;
-} pilot_rtc_set_channel_output_result;
-int pilot_rtc_set_channel_output(pilot_client *client, int32_t channel, int32_t value, pilot_rtc_set_channel_output_result *out, pilot_error *error);
-void pilot_rtc_set_channel_output_clear(pilot_rtc_set_channel_output_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_control_set_result;
+PILOT_API void pilot_control_set_clear(pilot_control_set_result *out);
+PILOT_API int pilot_control_set(pilot_client *client, int32_t channel, int32_t value, pilot_control_set_result *out, pilot_error *error);
 
 typedef struct {
     int64_t last_sample_ms;
@@ -124,10 +77,10 @@ typedef struct {
     double accel_x;
     double accel_y;
     double accel_z;
-    pilot_reply *_reply;
-} pilot_rtc_get_imu_data_result;
-int pilot_rtc_get_imu_data(pilot_client *client, pilot_rtc_get_imu_data_result *out, pilot_error *error);
-void pilot_rtc_get_imu_data_clear(pilot_rtc_get_imu_data_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_imu_read_result;
+PILOT_API void pilot_imu_read_clear(pilot_imu_read_result *out);
+PILOT_API int pilot_imu_read(pilot_client *client, pilot_imu_read_result *out, pilot_error *error);
 
 typedef struct {
     int64_t last_update_ms;
@@ -151,10 +104,10 @@ typedef struct {
     double altitude;
     int32_t gps_satellites;
     double hdop;
-    pilot_reply *_reply;
-} pilot_rtc_get_device_param_result;
-int pilot_rtc_get_device_param(pilot_client *client, pilot_rtc_get_device_param_result *out, pilot_error *error);
-void pilot_rtc_get_device_param_clear(pilot_rtc_get_device_param_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_device_read_result;
+PILOT_API void pilot_device_read_clear(pilot_device_read_result *out);
+PILOT_API int pilot_device_read(pilot_client *client, pilot_device_read_result *out, pilot_error *error);
 
 typedef struct {
     int64_t last_update_ms;
@@ -164,10 +117,10 @@ typedef struct {
     double z_microtesla;
     double magnitude_microtesla;
     uint64_t sequence;
-    pilot_reply *_reply;
-} pilot_rtc_get_magnetometer_data_result;
-int pilot_rtc_get_magnetometer_data(pilot_client *client, pilot_rtc_get_magnetometer_data_result *out, pilot_error *error);
-void pilot_rtc_get_magnetometer_data_clear(pilot_rtc_get_magnetometer_data_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_magnetometer_read_result;
+PILOT_API void pilot_magnetometer_read_clear(pilot_magnetometer_read_result *out);
+PILOT_API int pilot_magnetometer_read(pilot_client *client, pilot_magnetometer_read_result *out, pilot_error *error);
 
 typedef struct {
     const char * state;
@@ -177,63 +130,64 @@ typedef struct {
     double radius_m;
     uint32_t age_seconds;
     const char * detail;
-    pilot_reply *_reply;
-} pilot_rtc_get_cell_location_result;
-int pilot_rtc_get_cell_location(pilot_client *client, pilot_rtc_get_cell_location_result *out, pilot_error *error);
-void pilot_rtc_get_cell_location_clear(pilot_rtc_get_cell_location_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_location_read_cell_result;
+PILOT_API void pilot_location_read_cell_clear(pilot_location_read_cell_result *out);
+PILOT_API int pilot_location_read_cell(pilot_client *client, pilot_location_read_cell_result *out, pilot_error *error);
 
 typedef struct {
-    const pilot_value * status;
-    pilot_reply *_reply;
-} pilot_rtc_get_gps_status_result;
-int pilot_rtc_get_gps_status(pilot_client *client, pilot_rtc_get_gps_status_result *out, pilot_error *error);
-void pilot_rtc_get_gps_status_clear(pilot_rtc_get_gps_status_result *out);
+    const pilot_properties * status;
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_gps_read_result;
+PILOT_API void pilot_gps_read_clear(pilot_gps_read_result *out);
+PILOT_API int pilot_gps_read(pilot_client *client, pilot_gps_read_result *out, pilot_error *error);
 
 typedef struct {
-    const pilot_value * channels;
+    const pilot_channel_output * channels;
+    size_t channels_count;
     bool debug_active;
     int64_t last_remote_rx_ms;
-    pilot_reply *_reply;
-} pilot_rtc_get_channel_output_status_result;
-int pilot_rtc_get_channel_output_status(pilot_client *client, pilot_rtc_get_channel_output_status_result *out, pilot_error *error);
-void pilot_rtc_get_channel_output_status_clear(pilot_rtc_get_channel_output_status_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_control_get_outputs_result;
+PILOT_API void pilot_control_get_outputs_clear(pilot_control_get_outputs_result *out);
+PILOT_API int pilot_control_get_outputs(pilot_client *client, pilot_control_get_outputs_result *out, pilot_error *error);
 
 typedef struct {
     bool accepted;
     const char * reason;
-    pilot_reply *_reply;
-} pilot_rtc_begin_channel_debug_result;
-int pilot_rtc_begin_channel_debug(pilot_client *client, pilot_rtc_begin_channel_debug_result *out, pilot_error *error);
-void pilot_rtc_begin_channel_debug_clear(pilot_rtc_begin_channel_debug_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_control_debug_begin_result;
+PILOT_API void pilot_control_debug_begin_clear(pilot_control_debug_begin_result *out);
+PILOT_API int pilot_control_debug_begin(pilot_client *client, pilot_control_debug_begin_result *out, pilot_error *error);
 
 typedef struct {
     bool accepted;
     const char * reason;
-    pilot_reply *_reply;
-} pilot_rtc_set_channel_debug_result;
-int pilot_rtc_set_channel_debug(pilot_client *client, uint32_t channel, uint32_t mode, int32_t value, bool enabled, pilot_rtc_set_channel_debug_result *out, pilot_error *error);
-void pilot_rtc_set_channel_debug_clear(pilot_rtc_set_channel_debug_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_control_debug_set_result;
+PILOT_API void pilot_control_debug_set_clear(pilot_control_debug_set_result *out);
+PILOT_API int pilot_control_debug_set(pilot_client *client, uint32_t channel, uint32_t mode, int32_t value, bool enabled, pilot_control_debug_set_result *out, pilot_error *error);
 
 typedef struct {
     bool active;
-    pilot_reply *_reply;
-} pilot_rtc_channel_debug_keep_alive_result;
-int pilot_rtc_channel_debug_keep_alive(pilot_client *client, pilot_rtc_channel_debug_keep_alive_result *out, pilot_error *error);
-void pilot_rtc_channel_debug_keep_alive_clear(pilot_rtc_channel_debug_keep_alive_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_control_debug_keepalive_result;
+PILOT_API void pilot_control_debug_keepalive_clear(pilot_control_debug_keepalive_result *out);
+PILOT_API int pilot_control_debug_keepalive(pilot_client *client, pilot_control_debug_keepalive_result *out, pilot_error *error);
 
 typedef struct {
     bool ended;
-    pilot_reply *_reply;
-} pilot_rtc_end_channel_debug_result;
-int pilot_rtc_end_channel_debug(pilot_client *client, pilot_rtc_end_channel_debug_result *out, pilot_error *error);
-void pilot_rtc_end_channel_debug_clear(pilot_rtc_end_channel_debug_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_control_debug_end_result;
+PILOT_API void pilot_control_debug_end_clear(pilot_control_debug_end_result *out);
+PILOT_API int pilot_control_debug_end(pilot_client *client, pilot_control_debug_end_result *out, pilot_error *error);
 
 typedef struct {
-    const pilot_value * status;
-    pilot_reply *_reply;
-} pilot_rtc_get_media_status_result;
-int pilot_rtc_get_media_status(pilot_client *client, pilot_rtc_get_media_status_result *out, pilot_error *error);
-void pilot_rtc_get_media_status_clear(pilot_rtc_get_media_status_result *out);
+    const pilot_properties * status;
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_media_read_result;
+PILOT_API void pilot_media_read_clear(pilot_media_read_result *out);
+PILOT_API int pilot_media_read(pilot_client *client, pilot_media_read_result *out, pilot_error *error);
 
 typedef struct {
     bool available;
@@ -242,29 +196,29 @@ typedef struct {
     uint64_t sequence;
     double rms_dbfs;
     double peak_dbfs;
-    const pilot_value * levels;
-    pilot_reply *_reply;
-} pilot_rtc_get_audio_spectrum_result;
-int pilot_rtc_get_audio_spectrum(pilot_client *client, pilot_rtc_get_audio_spectrum_result *out, pilot_error *error);
-void pilot_rtc_get_audio_spectrum_clear(pilot_rtc_get_audio_spectrum_result *out);
+    pilot_bytes levels;
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_audio_read_spectrum_result;
+PILOT_API void pilot_audio_read_spectrum_clear(pilot_audio_read_spectrum_result *out);
+PILOT_API int pilot_audio_read_spectrum(pilot_client *client, pilot_audio_read_spectrum_result *out, pilot_error *error);
 
 typedef struct {
     bool available;
     uint32_t input_volume;
     uint32_t output_volume;
-    pilot_reply *_reply;
-} pilot_rtc_get_audio_volume_result;
-int pilot_rtc_get_audio_volume(pilot_client *client, pilot_rtc_get_audio_volume_result *out, pilot_error *error);
-void pilot_rtc_get_audio_volume_clear(pilot_rtc_get_audio_volume_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_audio_get_volume_result;
+PILOT_API void pilot_audio_get_volume_clear(pilot_audio_get_volume_result *out);
+PILOT_API int pilot_audio_get_volume(pilot_client *client, pilot_audio_get_volume_result *out, pilot_error *error);
 
 typedef struct {
     bool accepted;
     uint32_t actual_volume;
     const char * reason;
-    pilot_reply *_reply;
-} pilot_rtc_set_audio_volume_result;
-int pilot_rtc_set_audio_volume(pilot_client *client, const char * target, uint32_t volume, pilot_rtc_set_audio_volume_result *out, pilot_error *error);
-void pilot_rtc_set_audio_volume_clear(pilot_rtc_set_audio_volume_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_audio_set_volume_result;
+PILOT_API void pilot_audio_set_volume_clear(pilot_audio_set_volume_result *out);
+PILOT_API int pilot_audio_set_volume(pilot_client *client, const char * target, uint32_t volume, pilot_audio_set_volume_result *out, pilot_error *error);
 
 typedef struct {
     bool success;
@@ -272,84 +226,152 @@ typedef struct {
     uint32_t height;
     uint32_t stride_bytes;
     int64_t captured_ms;
-    const pilot_value * rgb565;
+    pilot_bytes rgb565;
     const char * reason;
-    pilot_reply *_reply;
-} pilot_rtc_capture_camera_preview_result;
-int pilot_rtc_capture_camera_preview(pilot_client *client, pilot_rtc_capture_camera_preview_result *out, pilot_error *error);
-void pilot_rtc_capture_camera_preview_clear(pilot_rtc_capture_camera_preview_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_camera_capture_preview_result;
+PILOT_API void pilot_camera_capture_preview_clear(pilot_camera_capture_preview_result *out);
+PILOT_API int pilot_camera_capture_preview(pilot_client *client, pilot_camera_capture_preview_result *out, pilot_error *error);
 
 typedef struct {
-    const pilot_value * endpoints;
-    pilot_reply *_reply;
-} pilot_rtc_get_transport_stats_result;
-int pilot_rtc_get_transport_stats(pilot_client *client, pilot_rtc_get_transport_stats_result *out, pilot_error *error);
-void pilot_rtc_get_transport_stats_clear(pilot_rtc_get_transport_stats_result *out);
-
-typedef struct {
-    const char * json;
-    pilot_reply *_reply;
-} pilot_rtc_get_diagnostic_stats_result;
-int pilot_rtc_get_diagnostic_stats(pilot_client *client, pilot_rtc_get_diagnostic_stats_result *out, pilot_error *error);
-void pilot_rtc_get_diagnostic_stats_clear(pilot_rtc_get_diagnostic_stats_result *out);
+    const pilot_transport_stats * endpoints;
+    size_t endpoints_count;
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_connection_get_stats_result;
+PILOT_API void pilot_connection_get_stats_clear(pilot_connection_get_stats_result *out);
+PILOT_API int pilot_connection_get_stats(pilot_client *client, pilot_connection_get_stats_result *out, pilot_error *error);
 
 typedef struct {
     const char * json;
-    pilot_reply *_reply;
-} pilot_rtc_get_network_diagnostics_result;
-int pilot_rtc_get_network_diagnostics(pilot_client *client, pilot_rtc_get_network_diagnostics_result *out, pilot_error *error);
-void pilot_rtc_get_network_diagnostics_clear(pilot_rtc_get_network_diagnostics_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_diagnostics_read_result;
+PILOT_API void pilot_diagnostics_read_clear(pilot_diagnostics_read_result *out);
+PILOT_API int pilot_diagnostics_read(pilot_client *client, pilot_diagnostics_read_result *out, pilot_error *error);
+
+typedef struct {
+    const char * json;
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_network_read_result;
+PILOT_API void pilot_network_read_clear(pilot_network_read_result *out);
+PILOT_API int pilot_network_read(pilot_client *client, pilot_network_read_result *out, pilot_error *error);
 
 typedef struct {
     bool accepted;
     const char * reason;
-    pilot_reply *_reply;
-} pilot_rtc_request_reconnect_result;
-int pilot_rtc_request_reconnect(pilot_client *client, const char * endpoint, pilot_rtc_request_reconnect_result *out, pilot_error *error);
-void pilot_rtc_request_reconnect_clear(pilot_rtc_request_reconnect_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_connection_request_reconnect_result;
+PILOT_API void pilot_connection_request_reconnect_clear(pilot_connection_request_reconnect_result *out);
+PILOT_API int pilot_connection_request_reconnect(pilot_client *client, const char * endpoint, pilot_connection_request_reconnect_result *out, pilot_error *error);
 
 typedef struct {
     const char * json;
-    pilot_reply *_reply;
-} pilot_selfcheck_get_report_result;
-int pilot_selfcheck_get_report(pilot_client *client, pilot_selfcheck_get_report_result *out, pilot_error *error);
-void pilot_selfcheck_get_report_clear(pilot_selfcheck_get_report_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_selfcheck_read_result;
+PILOT_API void pilot_selfcheck_read_clear(pilot_selfcheck_read_result *out);
+PILOT_API int pilot_selfcheck_read(pilot_client *client, pilot_selfcheck_read_result *out, pilot_error *error);
 
 typedef struct {
     bool accepted;
     const char * reason;
-    pilot_reply *_reply;
-} pilot_selfcheck_run_now_result;
-int pilot_selfcheck_run_now(pilot_client *client, pilot_selfcheck_run_now_result *out, pilot_error *error);
-void pilot_selfcheck_run_now_clear(pilot_selfcheck_run_now_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_selfcheck_run_result;
+PILOT_API void pilot_selfcheck_run_clear(pilot_selfcheck_run_result *out);
+PILOT_API int pilot_selfcheck_run(pilot_client *client, pilot_selfcheck_run_result *out, pilot_error *error);
 
 typedef struct {
     bool ignored;
-    pilot_reply *_reply;
-} pilot_selfcheck_get_network_recovery_policy_result;
-int pilot_selfcheck_get_network_recovery_policy(pilot_client *client, pilot_selfcheck_get_network_recovery_policy_result *out, pilot_error *error);
-void pilot_selfcheck_get_network_recovery_policy_clear(pilot_selfcheck_get_network_recovery_policy_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_network_get_recovery_policy_result;
+PILOT_API void pilot_network_get_recovery_policy_clear(pilot_network_get_recovery_policy_result *out);
+PILOT_API int pilot_network_get_recovery_policy(pilot_client *client, pilot_network_get_recovery_policy_result *out, pilot_error *error);
 
 typedef struct {
     bool ignored;
-    pilot_reply *_reply;
-} pilot_selfcheck_set_network_recovery_mode_result;
-int pilot_selfcheck_set_network_recovery_mode(pilot_client *client, const char * mode, pilot_selfcheck_set_network_recovery_mode_result *out, pilot_error *error);
-void pilot_selfcheck_set_network_recovery_mode_clear(pilot_selfcheck_set_network_recovery_mode_result *out);
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_network_set_recovery_mode_result;
+PILOT_API void pilot_network_set_recovery_mode_clear(pilot_network_set_recovery_mode_result *out);
+PILOT_API int pilot_network_set_recovery_mode(pilot_client *client, const char * mode, pilot_network_set_recovery_mode_result *out, pilot_error *error);
 
 typedef struct {
     const char * json;
-    pilot_reply *_reply;
+    void *_private; /* Library-owned; never modify or copy ownership. */
 } pilot_fan_get_config_result;
-int pilot_fan_get_config(pilot_client *client, pilot_fan_get_config_result *out, pilot_error *error);
-void pilot_fan_get_config_clear(pilot_fan_get_config_result *out);
+PILOT_API void pilot_fan_get_config_clear(pilot_fan_get_config_result *out);
+PILOT_API int pilot_fan_get_config(pilot_client *client, pilot_fan_get_config_result *out, pilot_error *error);
 
 typedef struct {
     const char * json;
-    pilot_reply *_reply;
+    void *_private; /* Library-owned; never modify or copy ownership. */
 } pilot_fan_set_config_result;
-int pilot_fan_set_config(pilot_client *client, const char * request, pilot_fan_set_config_result *out, pilot_error *error);
-void pilot_fan_set_config_clear(pilot_fan_set_config_result *out);
+PILOT_API void pilot_fan_set_config_clear(pilot_fan_set_config_result *out);
+PILOT_API int pilot_fan_set_config(pilot_client *client, const char * request, pilot_fan_set_config_result *out, pilot_error *error);
+
+typedef struct {
+    const int32_t * signals;
+    size_t signals_count;
+    int64_t last_rx_ms;
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_control_event;
+typedef void (*pilot_control_callback)(const pilot_control_event *event, void *userdata);
+PILOT_API int pilot_watch_control(pilot_client *client, pilot_control_callback callback, void *userdata, pilot_error *error);
+
+typedef struct {
+    int64_t last_update_ms;
+    bool has_imu;
+    double gyro_x;
+    double gyro_y;
+    double gyro_z;
+    double accel_x;
+    double accel_y;
+    double accel_z;
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_imu_event;
+typedef void (*pilot_imu_callback)(const pilot_imu_event *event, void *userdata);
+PILOT_API int pilot_watch_imu(pilot_client *client, pilot_imu_callback callback, void *userdata, pilot_error *error);
+
+typedef struct {
+    int64_t last_update_ms;
+    bool valid;
+    double x_microtesla;
+    double y_microtesla;
+    double z_microtesla;
+    double magnitude_microtesla;
+    uint64_t sequence;
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_magnetometer_event;
+typedef void (*pilot_magnetometer_callback)(const pilot_magnetometer_event *event, void *userdata);
+PILOT_API int pilot_watch_magnetometer(pilot_client *client, pilot_magnetometer_callback callback, void *userdata, pilot_error *error);
+
+typedef struct {
+    const char * type;
+    bool connected;
+    int32_t subscribe_count;
+    bool is_active;
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_connection_event;
+typedef void (*pilot_connection_callback)(const pilot_connection_event *event, void *userdata);
+PILOT_API int pilot_watch_connection(pilot_client *client, pilot_connection_callback callback, void *userdata, pilot_error *error);
+
+typedef struct {
+    const char * json;
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_network_event;
+typedef void (*pilot_network_callback)(const pilot_network_event *event, void *userdata);
+PILOT_API int pilot_watch_network(pilot_client *client, pilot_network_callback callback, void *userdata, pilot_error *error);
+
+typedef struct {
+    const char * json;
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_selfcheck_event;
+typedef void (*pilot_selfcheck_callback)(const pilot_selfcheck_event *event, void *userdata);
+PILOT_API int pilot_watch_selfcheck(pilot_client *client, pilot_selfcheck_callback callback, void *userdata, pilot_error *error);
+
+typedef struct {
+    const char * json;
+    void *_private; /* Library-owned; never modify or copy ownership. */
+} pilot_cellular_event;
+typedef void (*pilot_cellular_callback)(const pilot_cellular_event *event, void *userdata);
+PILOT_API int pilot_watch_cellular(pilot_client *client, pilot_cellular_callback callback, void *userdata, pilot_error *error);
 
 #ifdef __cplusplus
 }

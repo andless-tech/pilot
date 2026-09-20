@@ -1,214 +1,194 @@
-# D-Bus 接口清单
+# Pilot 业务 API
 
-由 `protocol/interfaces.json` 自动生成。对应工作区快照，不代表所有旧固件均支持。
+只需包含 `<pilot/api.h>` 并链接 Pilot 库，不需要任何底层服务名或消息编号。
 
-返回值中的字符串、数组、字典由结果对象持有，使用后调用对应 `_clear()`；重复调用前也要先清理。
-信号参数按下面的顺序从 `pilot_reply_at()` 读取，仅在回调期间有效。
+所有结果先用 `{0}` 初始化，使用后调用对应 `_clear()`；重复使用结果前先清理。
+数组有对应 `_count` 字段；图片/频谱字节使用 `.data` 和 `.size`；属性使用 `pilot_properties_*` 读取。
 
-## tech.andless.RealTimeComm
+## pilot_battery_request
+- 输入：`request`: `const char *`
+- 返回结构：`pilot_battery_request_result`
+- 输出：`response`: `const char *`
 
-- 对象：`/tech/andless/RealTimeComm/Status`
-- 接口：`tech.andless.RealTimeComm.Status1`
-
-### BatteryCommand
-函数：`pilot_rtc_battery_command()`
-- 输入：request: `s`
-- 输出：response: `s`
-
-### GetActiveEndpoint
-函数：`pilot_rtc_get_active_endpoint()`
+## pilot_connection_get_active
 - 输入：无
-- 输出：index: `i`
+- 返回结构：`pilot_connection_get_active_result`
+- 输出：`index`: `int32_t`
 
-### GetCloudStatus
-函数：`pilot_rtc_get_cloud_status()`
+## pilot_connection_get_relay
 - 输入：无
-- 输出：type: `s`, connected: `b`, ip: `s`, port: `q`, subscribeCount: `i`, isActive: `b`
+- 返回结构：`pilot_connection_get_relay_result`
+- 输出：`type`: `const char *`, `connected`: `bool`, `ip`: `const char *`, `port`: `uint16_t`, `subscribe_count`: `int32_t`, `is_active`: `bool`
 
-### GetP2PStatus
-函数：`pilot_rtc_get_p2p_status()`
+## pilot_connection_get_p2p
 - 输入：无
-- 输出：type: `s`, connected: `b`, ip: `s`, port: `q`, subscribeCount: `i`, isActive: `b`
+- 返回结构：`pilot_connection_get_p2p_result`
+- 输出：`type`: `const char *`, `connected`: `bool`, `ip`: `const char *`, `port`: `uint16_t`, `subscribe_count`: `int32_t`, `is_active`: `bool`
 
-### GetAllStatus
-函数：`pilot_rtc_get_all_status()`
+## pilot_connection_get_status
 - 输入：无
-- 输出：endpoints: `a(sbsqib)`, activeIndex: `i`
+- 返回结构：`pilot_connection_get_status_result`
+- 输出：`endpoints`: `const pilot_endpoint *`, `active_index`: `int32_t`
 
-### GetControlSignals
-函数：`pilot_rtc_get_control_signals()`
+## pilot_control_read
 - 输入：无
-- 输出：signals: `ai`, lastRxMs: `x`
+- 返回结构：`pilot_control_read_result`
+- 输出：`signals`: `const int32_t *`, `last_rx_ms`: `int64_t`
 
-### SetChannelOutput
-函数：`pilot_rtc_set_channel_output()`
-- 输入：channel: `i`, value: `i`
-- 输出：applied: `b`
+## pilot_control_set
+- 输入：`channel`: `int32_t`, `value`: `int32_t`
+- 返回结构：`pilot_control_set_result`
+- 输出：`applied`: `bool`
 
-### GetImuData
-函数：`pilot_rtc_get_imu_data()`
+## pilot_imu_read
 - 输入：无
-- 输出：lastSampleMs: `x`, valid: `b`, gyroX: `d`, gyroY: `d`, gyroZ: `d`, accelX: `d`, accelY: `d`, accelZ: `d`
+- 返回结构：`pilot_imu_read_result`
+- 输出：`last_sample_ms`: `int64_t`, `valid`: `bool`, `gyro_x`: `double`, `gyro_y`: `double`, `gyro_z`: `double`, `accel_x`: `double`, `accel_y`: `double`, `accel_z`: `double`
 
-### GetDeviceParam
-函数：`pilot_rtc_get_device_param()`
+## pilot_device_read
 - 输入：无
-- 输出：lastUpdateMs: `x`, hasImu: `b`, gyroX: `d`, gyroY: `d`, gyroZ: `d`, accelX: `d`, accelY: `d`, accelZ: `d`, temperature: `d`, memoryUsage: `d`, cpuUsage: `d`, diskUsage: `d`, batteryPercent: `i`, voltage: `d`, rssiDbm: `i`, hasGps: `b`, latitude: `d`, longitude: `d`, altitude: `d`, gpsSatellites: `i`, hdop: `d`
+- 返回结构：`pilot_device_read_result`
+- 输出：`last_update_ms`: `int64_t`, `has_imu`: `bool`, `gyro_x`: `double`, `gyro_y`: `double`, `gyro_z`: `double`, `accel_x`: `double`, `accel_y`: `double`, `accel_z`: `double`, `temperature`: `double`, `memory_usage`: `double`, `cpu_usage`: `double`, `disk_usage`: `double`, `battery_percent`: `int32_t`, `voltage`: `double`, `rssi_dbm`: `int32_t`, `has_gps`: `bool`, `latitude`: `double`, `longitude`: `double`, `altitude`: `double`, `gps_satellites`: `int32_t`, `hdop`: `double`
 
-### GetMagnetometerData
-函数：`pilot_rtc_get_magnetometer_data()`
+## pilot_magnetometer_read
 - 输入：无
-- 输出：lastUpdateMs: `x`, valid: `b`, xMicrotesla: `d`, yMicrotesla: `d`, zMicrotesla: `d`, magnitudeMicrotesla: `d`, sequence: `t`
+- 返回结构：`pilot_magnetometer_read_result`
+- 输出：`last_update_ms`: `int64_t`, `valid`: `bool`, `x_microtesla`: `double`, `y_microtesla`: `double`, `z_microtesla`: `double`, `magnitude_microtesla`: `double`, `sequence`: `uint64_t`
 
-### GetCellLocation
-函数：`pilot_rtc_get_cell_location()`
+## pilot_location_read_cell
 - 输入：无
-- 输出：state: `s`, valid: `b`, latitude: `d`, longitude: `d`, radius_m: `d`, age_seconds: `u`, detail: `s`
+- 返回结构：`pilot_location_read_cell_result`
+- 输出：`state`: `const char *`, `valid`: `bool`, `latitude`: `double`, `longitude`: `double`, `radius_m`: `double`, `age_seconds`: `uint32_t`, `detail`: `const char *`
 
-### GetGpsStatus
-函数：`pilot_rtc_get_gps_status()`
+## pilot_gps_read
 - 输入：无
-- 输出：status: `a{sv}`
+- 返回结构：`pilot_gps_read_result`
+- 输出：`status`: `const pilot_properties *`
 
-### GetChannelOutputStatus
-函数：`pilot_rtc_get_channel_output_status()`
+## pilot_control_get_outputs
 - 输入：无
-- 输出：channels: `a(uuibb)`, debugActive: `b`, lastRemoteRxMs: `x`
+- 返回结构：`pilot_control_get_outputs_result`
+- 输出：`channels`: `const pilot_channel_output *`, `debug_active`: `bool`, `last_remote_rx_ms`: `int64_t`
 
-### BeginChannelDebug
-函数：`pilot_rtc_begin_channel_debug()`
+## pilot_control_debug_begin
 - 输入：无
-- 输出：accepted: `b`, reason: `s`
+- 返回结构：`pilot_control_debug_begin_result`
+- 输出：`accepted`: `bool`, `reason`: `const char *`
 
-### SetChannelDebug
-函数：`pilot_rtc_set_channel_debug()`
-- 输入：channel: `u`, mode: `u`, value: `i`, enabled: `b`
-- 输出：accepted: `b`, reason: `s`
+## pilot_control_debug_set
+- 输入：`channel`: `uint32_t`, `mode`: `uint32_t`, `value`: `int32_t`, `enabled`: `bool`
+- 返回结构：`pilot_control_debug_set_result`
+- 输出：`accepted`: `bool`, `reason`: `const char *`
 
-### ChannelDebugKeepAlive
-函数：`pilot_rtc_channel_debug_keep_alive()`
+## pilot_control_debug_keepalive
 - 输入：无
-- 输出：active: `b`
+- 返回结构：`pilot_control_debug_keepalive_result`
+- 输出：`active`: `bool`
 
-### EndChannelDebug
-函数：`pilot_rtc_end_channel_debug()`
+## pilot_control_debug_end
 - 输入：无
-- 输出：ended: `b`
+- 返回结构：`pilot_control_debug_end_result`
+- 输出：`ended`: `bool`
 
-### GetMediaStatus
-函数：`pilot_rtc_get_media_status()`
+## pilot_media_read
 - 输入：无
-- 输出：status: `a{sv}`
+- 返回结构：`pilot_media_read_result`
+- 输出：`status`: `const pilot_properties *`
 
-### GetAudioSpectrum
-函数：`pilot_rtc_get_audio_spectrum()`
+## pilot_audio_read_spectrum
 - 输入：无
-- 输出：available: `b`, sampleRate: `u`, capturedMs: `x`, sequence: `t`, rmsDbfs: `d`, peakDbfs: `d`, levels: `ay`
+- 返回结构：`pilot_audio_read_spectrum_result`
+- 输出：`available`: `bool`, `sample_rate`: `uint32_t`, `captured_ms`: `int64_t`, `sequence`: `uint64_t`, `rms_dbfs`: `double`, `peak_dbfs`: `double`, `levels`: `pilot_bytes`
 
-### GetAudioVolume
-函数：`pilot_rtc_get_audio_volume()`
+## pilot_audio_get_volume
 - 输入：无
-- 输出：available: `b`, inputVolume: `u`, outputVolume: `u`
+- 返回结构：`pilot_audio_get_volume_result`
+- 输出：`available`: `bool`, `input_volume`: `uint32_t`, `output_volume`: `uint32_t`
 
-### SetAudioVolume
-函数：`pilot_rtc_set_audio_volume()`
-- 输入：target: `s`, volume: `u`
-- 输出：accepted: `b`, actualVolume: `u`, reason: `s`
+## pilot_audio_set_volume
+- 输入：`target`: `const char *`, `volume`: `uint32_t`
+- 返回结构：`pilot_audio_set_volume_result`
+- 输出：`accepted`: `bool`, `actual_volume`: `uint32_t`, `reason`: `const char *`
 
-### CaptureCameraPreview
-函数：`pilot_rtc_capture_camera_preview()`
+## pilot_camera_capture_preview
 - 输入：无
-- 输出：success: `b`, width: `u`, height: `u`, strideBytes: `u`, capturedMs: `x`, rgb565: `ay`, reason: `s`
+- 返回结构：`pilot_camera_capture_preview_result`
+- 输出：`success`: `bool`, `width`: `uint32_t`, `height`: `uint32_t`, `stride_bytes`: `uint32_t`, `captured_ms`: `int64_t`, `rgb565`: `pilot_bytes`, `reason`: `const char *`
 
-### GetTransportStats
-函数：`pilot_rtc_get_transport_stats()`
+## pilot_connection_get_stats
 - 输入：无
-- 输出：endpoints: `a(sbbitttu)`
+- 返回结构：`pilot_connection_get_stats_result`
+- 输出：`endpoints`: `const pilot_transport_stats *`
 
-### GetDiagnosticStats
-函数：`pilot_rtc_get_diagnostic_stats()`
+## pilot_diagnostics_read
 - 输入：无
-- 输出：json: `s`
+- 返回结构：`pilot_diagnostics_read_result`
+- 输出：`json`: `const char *`
 
-### GetNetworkDiagnostics
-函数：`pilot_rtc_get_network_diagnostics()`
+## pilot_network_read
 - 输入：无
-- 输出：json: `s`
+- 返回结构：`pilot_network_read_result`
+- 输出：`json`: `const char *`
 
-### RequestReconnect
-函数：`pilot_rtc_request_reconnect()`
-- 输入：endpoint: `s`
-- 输出：accepted: `b`, reason: `s`
+## pilot_connection_request_reconnect
+- 输入：`endpoint`: `const char *`
+- 返回结构：`pilot_connection_request_reconnect_result`
+- 输出：`accepted`: `bool`, `reason`: `const char *`
 
-### 信号 ControlSignalsChanged
-枚举：`PILOT_SIGNAL_RTC_CONTROL_SIGNALS_CHANGED`
-signals: `ai`, lastRxMs: `x`
-
-### 信号 ImuDataChanged
-枚举：`PILOT_SIGNAL_RTC_IMU_DATA_CHANGED`
-lastUpdateMs: `x`, hasImu: `b`, gyroX: `d`, gyroY: `d`, gyroZ: `d`, accelX: `d`, accelY: `d`, accelZ: `d`
-
-### 信号 MagnetometerDataChanged
-枚举：`PILOT_SIGNAL_RTC_MAGNETOMETER_DATA_CHANGED`
-lastUpdateMs: `x`, valid: `b`, xMicrotesla: `d`, yMicrotesla: `d`, zMicrotesla: `d`, magnitudeMicrotesla: `d`, sequence: `t`
-
-### 信号 EndpointStateChanged
-枚举：`PILOT_SIGNAL_RTC_ENDPOINT_STATE_CHANGED`
-type: `s`, connected: `b`, subscribeCount: `i`, isActive: `b`
-
-### 信号 NetworkDiagnosticsChanged
-枚举：`PILOT_SIGNAL_RTC_NETWORK_DIAGNOSTICS_CHANGED`
-json: `s`
-
-## tech.andless.SelfCheck
-
-- 对象：`/tech/andless/SelfCheck/Report`
-- 接口：`tech.andless.SelfCheck.Report1`
-
-### GetReport
-函数：`pilot_selfcheck_get_report()`
+## pilot_selfcheck_read
 - 输入：无
-- 输出：json: `s`
+- 返回结构：`pilot_selfcheck_read_result`
+- 输出：`json`: `const char *`
 
-### RunNow
-函数：`pilot_selfcheck_run_now()`
+## pilot_selfcheck_run
 - 输入：无
-- 输出：accepted: `b`, reason: `s`
+- 返回结构：`pilot_selfcheck_run_result`
+- 输出：`accepted`: `bool`, `reason`: `const char *`
 
-### GetNetworkRecoveryPolicy
-函数：`pilot_selfcheck_get_network_recovery_policy()`
+## pilot_network_get_recovery_policy
 - 输入：无
-- 输出：ignored: `b`
+- 返回结构：`pilot_network_get_recovery_policy_result`
+- 输出：`ignored`: `bool`
 
-### SetNetworkRecoveryMode
-函数：`pilot_selfcheck_set_network_recovery_mode()`
-- 输入：mode: `s`
-- 输出：ignored: `b`
+## pilot_network_set_recovery_mode
+- 输入：`mode`: `const char *`
+- 返回结构：`pilot_network_set_recovery_mode_result`
+- 输出：`ignored`: `bool`
 
-### 信号 ReportChanged
-枚举：`PILOT_SIGNAL_SELFCHECK_REPORT_CHANGED`
-json: `s`
-
-## tech.andless.Fan
-
-- 对象：`/tech/andless/Fan`
-- 接口：`tech.andless.Fan.Config1`
-
-### GetConfig
-函数：`pilot_fan_get_config()`
+## pilot_fan_get_config
 - 输入：无
-- 输出：json: `s`
+- 返回结构：`pilot_fan_get_config_result`
+- 输出：`json`: `const char *`
 
-### SetConfig
-函数：`pilot_fan_set_config()`
-- 输入：request: `s`
-- 输出：json: `s`
+## pilot_fan_set_config
+- 输入：`request`: `const char *`
+- 返回结构：`pilot_fan_set_config_result`
+- 输出：`json`: `const char *`
 
-## tech.andless.Modem
+## pilot_watch_control
+回调接收 `const pilot_control_event *`，字段直接访问，无需解析消息。
+传入 NULL 回调取消订阅；事件数据仅在回调期间有效。
 
-- 对象：`/tech/andless/Modem`
-- 接口：`tech.andless.Modem.Status1`
+## pilot_watch_imu
+回调接收 `const pilot_imu_event *`，字段直接访问，无需解析消息。
+传入 NULL 回调取消订阅；事件数据仅在回调期间有效。
 
-### 信号 CellInfoChanged
-枚举：`PILOT_SIGNAL_MODEM_CELL_INFO_CHANGED`
-json: `s`
+## pilot_watch_magnetometer
+回调接收 `const pilot_magnetometer_event *`，字段直接访问，无需解析消息。
+传入 NULL 回调取消订阅；事件数据仅在回调期间有效。
+
+## pilot_watch_connection
+回调接收 `const pilot_connection_event *`，字段直接访问，无需解析消息。
+传入 NULL 回调取消订阅；事件数据仅在回调期间有效。
+
+## pilot_watch_network
+回调接收 `const pilot_network_event *`，字段直接访问，无需解析消息。
+传入 NULL 回调取消订阅；事件数据仅在回调期间有效。
+
+## pilot_watch_selfcheck
+回调接收 `const pilot_selfcheck_event *`，字段直接访问，无需解析消息。
+传入 NULL 回调取消订阅；事件数据仅在回调期间有效。
+
+## pilot_watch_cellular
+回调接收 `const pilot_cellular_event *`，字段直接访问，无需解析消息。
+传入 NULL 回调取消订阅；事件数据仅在回调期间有效。

@@ -1,13 +1,13 @@
 PILOT_ROOT ?= $(abspath ../..)
-include $(PILOT_ROOT)/toolchain/arm.mk
+include $(PILOT_ROOT)/pilot.mk
 CFLAGS ?= -O2 -Wall -Wextra -Werror
-CPPFLAGS += -I$(PILOT_ROOT)/include
+CPPFLAGS += $(PILOT_CPPFLAGS)
 LDFLAGS += -Wl,-z,noexecstack,-z,relro,-z,now
-PILOT_LIB ?= $(PILOT_ROOT)/build/arm/libpilot.a
+OUTPUT ?= pilot-monitor
 
 .PHONY: all clean
-all: pilot-monitor
-pilot-monitor: main.c $(PILOT_LIB)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) main.c $(PILOT_LIB) $(DBUS_LIBS) -pthread -o $@
+all: $(OUTPUT)
+$(OUTPUT): main.c $(PILOT_LIBRARY) Makefile $(PILOT_ROOT)/pilot.mk
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) main.c $(PILOT_LDLIBS) -o $@
 clean:
-	rm -f -- pilot-monitor
+	rm -f -- $(OUTPUT)

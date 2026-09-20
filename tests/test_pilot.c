@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "pilot/api.h"
+#include "../src/private/protocol.h"
 #include <dbus/dbus.h>
 #include <assert.h>
 #include <inttypes.h>
@@ -161,19 +162,21 @@ static void check_value(const pilot_value *v)
     }
 }
 static unsigned received[16];
-static void callback(unsigned id, const pilot_reply *reply, void *context)
+static int callback(unsigned id, const pilot_reply *reply, void *context, pilot_error *error)
 {
+    (void)error;
     assert(context == received);
     received[id]++;
     for (size_t i = 0; i < pilot_reply_count(reply); ++i) check_value(pilot_reply_at(reply, i));
+    return PILOT_OK;
 }
 static int command(pilot_client *c, const char *name)
 {
-    pilot_rtc_battery_command_result out = {0};
+    pilot_battery_request_result out = {0};
     pilot_error error;
-    int rc = pilot_rtc_battery_command(c, name, &out, &error);
+    int rc = pilot_battery_request(c, name, &out, &error);
     assert(error.code == rc);
-    pilot_rtc_battery_command_clear(&out);
+    pilot_battery_request_clear(&out);
     return rc;
 }
 static void drain(pilot_client *c)
@@ -181,7 +184,8 @@ static void drain(pilot_client *c)
     pilot_error error;
     for (int i = 0; i < 20; ++i) assert(pilot_poll(c, 10, &error) >= 0);
 }
-int main(void)
+#include "public_calls.h"
+int main(int argc, char **argv)
 {
     alarm(30);
     int ready[2]; assert(pipe(ready) == 0);
@@ -190,8 +194,8 @@ int main(void)
     close(ready[1]); char byte; assert(read(ready[0], &byte, 1) == 1); close(ready[0]);
     pilot_client *c = NULL;
     pilot_error error;
-    pilot_options options = {.session_bus = true, .timeout_ms = 150};
-    assert(pilot_open(&options, &c, &error) == PILOT_OK);
+    pilot_options options = {.timeout_ms = 150};
+    assert(pilot_open_internal(&options, true, &c, &error) == PILOT_OK);
     for (unsigned i = 0; i < pilot_service_count; ++i) {
         bool available = false;
         assert(pilot_service_available(c, i, &available, &error) == PILOT_OK && available);
@@ -214,19 +218,25 @@ int main(void)
         for (size_t j = 0; j < pilot_reply_count(reply); ++j) check_value(pilot_reply_at(reply, j));
         pilot_reply_free(reply);
     }
-    pilot_rtc_get_imu_data_result imu = {0};
-    assert(pilot_rtc_get_imu_data(c, &imu, &error) == PILOT_OK);
+    pilot_imu_read_result imu = {0};
+    assert(pilot_imu_read(c, &imu, &error) == PILOT_OK);
     assert(imu.valid && imu.gyro_x == 1.25 && imu.last_sample_ms == -9007199254740999LL);
-    pilot_rtc_get_imu_data_clear(&imu); pilot_rtc_get_imu_data_clear(&imu);
-    assert(pilot_rtc_get_imu_data(c, NULL, &error) == PILOT_INVALID_ARGUMENT && error.code == PILOT_INVALID_ARGUMENT);
-    pilot_rtc_get_gps_status_result gps = {0};
-    assert(pilot_rtc_get_gps_status(c, &gps, &error) == PILOT_OK);
-    const pilot_value *value = pilot_dict_get(gps.status, "sample");
-    assert(value && value->type == 'd' && value->as.real == 1.25);
-    assert(!pilot_dict_get(gps.status, "missing")); pilot_rtc_get_gps_status_clear(&gps);
-    pilot_rtc_set_audio_volume_result volume = {0};
-    assert(pilot_rtc_set_audio_volume(c, "input", 60, &volume, &error) == PILOT_OK);
-    assert(volume.accepted && volume.actual_volume == 42); pilot_rtc_set_audio_volume_clear(&volume);
+    pilot_imu_read_clear(&imu); pilot_imu_read_clear(&imu);
+    assert(pilot_imu_read(c, NULL, &error) == PILOT_INVALID_ARGUMENT && error.code == PILOT_INVALID_ARGUMENT);
+    pilot_gps_read_result gps = {0};
+    assert(pilot_gps_read(c, &gps, &error) == PILOT_OK);
+    double value = 0;
+    assert(pilot_properties_double(gps.status, "sample", &value) && value == 1.25);
+    assert(!pilot_properties_double(gps.status, "missing", &value));
+    assert(pilot_properties_count(gps.status) == 2);
+    assert(!strcmp(pilot_properties_key(gps.status, 0), "sample"));
+    bool flag;
+    assert(!pilot_properties_bool(gps.status, "sample", &flag));
+    assert(!pilot_properties_double(gps.status, "sample", NULL));
+    pilot_gps_read_clear(&gps);
+    pilot_audio_set_volume_result volume = {0};
+    assert(pilot_audio_set_volume(c, "input", 60, &volume, &error) == PILOT_OK);
+    assert(volume.accepted && volume.actual_volume == 42); pilot_audio_set_volume_clear(&volume);
     assert(command(c, "__bad_reply__") == PILOT_BAD_REPLY);
     assert(command(c, "__timeout__") == PILOT_TIMEOUT);
     assert(command(c, "__denied__") == PILOT_ACCESS_DENIED);
@@ -234,12 +244,12 @@ int main(void)
     assert(command(c, NULL) == PILOT_INVALID_ARGUMENT);
     assert(command(c, "\xff") == PILOT_INVALID_ARGUMENT);
     assert(command(c, "__empty_arrays__") == PILOT_OK);
-    pilot_rtc_get_audio_spectrum_result spectrum = {0};
-    assert(pilot_rtc_get_audio_spectrum(c, &spectrum, &error) == PILOT_OK && spectrum.levels->count == 0);
-    pilot_rtc_get_audio_spectrum_clear(&spectrum);
-    pilot_rtc_get_all_status_result endpoints = {0};
-    assert(pilot_rtc_get_all_status(c, &endpoints, &error) == PILOT_OK && endpoints.endpoints->count == 0);
-    pilot_rtc_get_all_status_clear(&endpoints);
+    pilot_audio_read_spectrum_result spectrum = {0};
+    assert(pilot_audio_read_spectrum(c, &spectrum, &error) == PILOT_OK && spectrum.levels.size == 0);
+    pilot_audio_read_spectrum_clear(&spectrum);
+    pilot_connection_get_status_result endpoints = {0};
+    assert(pilot_connection_get_status(c, &endpoints, &error) == PILOT_OK && endpoints.endpoints_count == 0);
+    pilot_connection_get_status_clear(&endpoints);
     assert(command(c, "__normal_arrays__") == PILOT_OK);
     pilot_reply *reply = NULL;
     assert(pilot_call(c, 999, NULL, 0, &reply, &error) == PILOT_INVALID_ARGUMENT);
@@ -269,7 +279,25 @@ int main(void)
     for (unsigned i = 0; i < pilot_signal_count; ++i) assert(pilot_unsubscribe(c, i, &error) == PILOT_OK);
     assert(command(c, "__signals__") == PILOT_OK); drain(c);
     for (unsigned i = 0; i < pilot_signal_count; ++i) assert(received[i] == 3);
+    exercise_public_calls(c);
+    exercise_public_watches(c, true);
+    assert(command(c, "__signals__") == PILOT_OK); drain(c);
+    for (unsigned i = 0; i < pilot_signal_count; ++i) assert(public_event_counts[i] == 1);
+    exercise_public_watches(c, true);
+    assert(pilot_reconnect(c, &error) == PILOT_OK);
+    assert(command(c, "__signals__") == PILOT_OK); drain(c);
+    for (unsigned i = 0; i < pilot_signal_count; ++i) assert(public_event_counts[i] == 2);
+    exercise_public_watches(c, false);
+    assert(command(c, "__signals__") == PILOT_OK); drain(c);
+    for (unsigned i = 0; i < pilot_signal_count; ++i) assert(public_event_counts[i] == 2);
+    exercise_public_watches(c, true); /* close must release all owned callback contexts. */
     pilot_close(c);
+    if (argc == 2) {
+        pid_t consumer = fork(); assert(consumer >= 0);
+        if (!consumer) { execl(argv[1], argv[1], (char *)NULL); _exit(127); }
+        int status;
+        assert(waitpid(consumer, &status, 0) == consumer && WIFEXITED(status) && WEXITSTATUS(status) == 0);
+    }
     kill(child, SIGTERM); waitpid(child, NULL, 0);
     printf("PASS: %zu methods, %zu signals, typed APIs, 64-bit values, arrays/dicts/bytes,\n"
            "errors, malformed replies, owner change, reconnect, unsubscribe and sender isolation\n",

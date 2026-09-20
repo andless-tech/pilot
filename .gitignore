@@ -6,3 +6,5 @@
 /__pycache__/
 *.pyc
 /examples/monitor/pilot-monitor
+/examples/monitor/pilot-monitor-shared
+/examples/monitor/pilot-monitor-static

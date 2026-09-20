@@ -1,4 +1,4 @@
-#include "pilot/pilot.h"
+#include "private/transport.h"
 #include <dbus/dbus.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -8,13 +8,14 @@
 #define MAX_VALUES 32768U
 #define MAX_MESSAGE_BYTES (4 * 1024 * 1024)
 
-typedef struct { pilot_signal_callback callback; void *userdata; } subscription;
+typedef struct { pilot_signal_callback callback; void *userdata; bool owned; } subscription;
 struct pilot_client {
     DBusConnection *rpc, *events;
     pilot_options options;
     subscription *subscriptions;
     char (*owners)[256];
     bool polling;
+    bool session_bus;
 };
 struct pilot_reply {
     DBusMessage *message;
@@ -27,9 +28,9 @@ static void init_threads(void) { threads_ready = dbus_threads_init_default(); }
 static void clear_error(pilot_error *e) { if (e) memset(e, 0, sizeof(*e)); }
 static int fail(pilot_error *e, int code, const char *name, const char *message)
 {
+    (void)name;
     if (e) {
         e->code = code;
-        snprintf(e->name, sizeof(e->name), "%s", name ? name : "");
         snprintf(e->message, sizeof(e->message), "%s", message ? message : pilot_status_string(code));
     }
     return code;
@@ -44,7 +45,7 @@ static int bus_error(pilot_error *e, DBusError *error)
     else if (dbus_error_has_name(error, DBUS_ERROR_UNKNOWN_METHOD) || dbus_error_has_name(error, DBUS_ERROR_SERVICE_UNKNOWN) ||
              dbus_error_has_name(error, DBUS_ERROR_NAME_HAS_NO_OWNER) || dbus_error_has_name(error, DBUS_ERROR_UNKNOWN_INTERFACE)) code = PILOT_NOT_SUPPORTED;
     else if (dbus_error_has_name(error, DBUS_ERROR_NO_MEMORY)) code = PILOT_NO_MEMORY;
-    int result = fail(e, code, error->name, error->message);
+    int result = fail(e, code, NULL, NULL);
     dbus_error_free(error);
     return result;
 }
@@ -203,12 +204,12 @@ static int query_owner(pilot_client *c, unsigned id, pilot_error *e)
 static int connect_buses(pilot_client *c, pilot_error *e)
 {
     DBusError error = DBUS_ERROR_INIT;
-    c->rpc = dbus_bus_get_private(c->options.session_bus ? DBUS_BUS_SESSION : DBUS_BUS_SYSTEM, &error);
+    c->rpc = dbus_bus_get_private(c->session_bus ? DBUS_BUS_SESSION : DBUS_BUS_SYSTEM, &error);
     if (!c->rpc) return bus_error(e, &error);
     dbus_connection_set_exit_on_disconnect(c->rpc, FALSE);
     dbus_connection_set_max_message_size(c->rpc, MAX_MESSAGE_BYTES);
     dbus_connection_set_max_received_size(c->rpc, MAX_MESSAGE_BYTES);
-    c->events = dbus_bus_get_private(c->options.session_bus ? DBUS_BUS_SESSION : DBUS_BUS_SYSTEM, &error);
+    c->events = dbus_bus_get_private(c->session_bus ? DBUS_BUS_SESSION : DBUS_BUS_SYSTEM, &error);
     if (!c->events) { close_bus(&c->rpc); return bus_error(e, &error); }
     dbus_connection_set_exit_on_disconnect(c->events, FALSE);
     dbus_connection_set_max_message_size(c->events, MAX_MESSAGE_BYTES);
@@ -225,7 +226,7 @@ static int connect_buses(pilot_client *c, pilot_error *e)
 failed:
     close_bus(&c->events); close_bus(&c->rpc); return rc;
 }
-int pilot_open(const pilot_options *options, pilot_client **out, pilot_error *e)
+int pilot_open_internal(const pilot_options *options, bool session_bus, pilot_client **out, pilot_error *e)
 {
     clear_error(e);
     if (!out) return fail(e, PILOT_INVALID_ARGUMENT, NULL, NULL);
@@ -239,6 +240,7 @@ int pilot_open(const pilot_options *options, pilot_client **out, pilot_error *e)
     pilot_client *c = calloc(1, sizeof(*c));
     if (!c) return fail(e, PILOT_NO_MEMORY, NULL, NULL);
     c->options = opts;
+    c->session_bus = session_bus;
     c->subscriptions = calloc(pilot_signal_count, sizeof(*c->subscriptions));
     c->owners = calloc(pilot_service_count, sizeof(*c->owners));
     if (!c->subscriptions || !c->owners) { pilot_close(c); return fail(e, PILOT_NO_MEMORY, NULL, NULL); }
@@ -247,10 +249,16 @@ int pilot_open(const pilot_options *options, pilot_client **out, pilot_error *e)
     *out = c;
     return PILOT_OK;
 }
+int pilot_open(const pilot_options *options, pilot_client **out, pilot_error *e)
+{
+    return pilot_open_internal(options, false, out, e);
+}
 void pilot_close(pilot_client *c)
 {
     if (!c || c->polling) return;
     close_bus(&c->rpc); close_bus(&c->events);
+    for (size_t i = 0; c->subscriptions && i < pilot_signal_count; ++i)
+        if (c->subscriptions[i].owned) free(c->subscriptions[i].userdata);
     free(c->subscriptions); free(c->owners); free(c);
 }
 int pilot_reconnect(pilot_client *c, pilot_error *e)
@@ -336,8 +344,17 @@ int pilot_subscribe(pilot_client *c, unsigned id, pilot_signal_callback callback
         int rc = signal_match(c, id, true, e);
         if (rc != PILOT_OK) return rc;
     }
-    c->subscriptions[id] = (subscription){callback, userdata};
+    if (c->subscriptions[id].owned) free(c->subscriptions[id].userdata);
+    c->subscriptions[id] = (subscription){callback, userdata, false};
     return PILOT_OK;
+}
+int pilot_watch_install(pilot_client *c, unsigned id, pilot_signal_callback callback, void *context, pilot_error *e)
+{
+    if (!callback) { free(context); return pilot_unsubscribe(c, id, e); }
+    int rc = pilot_subscribe(c, id, callback, context, e);
+    if (rc == PILOT_OK) c->subscriptions[id].owned = true;
+    else free(context);
+    return rc;
 }
 int pilot_unsubscribe(pilot_client *c, unsigned id, pilot_error *e)
 {
@@ -348,6 +365,7 @@ int pilot_unsubscribe(pilot_client *c, unsigned id, pilot_error *e)
         int rc = signal_match(c, id, false, e);
         if (rc != PILOT_OK) return rc;
     }
+    if (c->subscriptions[id].owned) free(c->subscriptions[id].userdata);
     c->subscriptions[id] = (subscription){0};
     return PILOT_OK;
 }
@@ -374,9 +392,9 @@ static int dispatch_signal(pilot_client *c, DBusMessage *msg, pilot_error *e)
         pilot_reply *reply = NULL;
         int rc = decode_reply(msg, &reply, e);
         if (rc != PILOT_OK) return rc;
-        sub.callback(i, reply, sub.userdata);
+        rc = sub.callback(i, reply, sub.userdata, e);
         pilot_reply_free(reply);
-        return 1;
+        return rc < 0 ? rc : 1;
     }
     return 0;
 }
@@ -409,12 +427,65 @@ const char *pilot_status_string(int status)
     case PILOT_OK: return "ok";
     case PILOT_INVALID_ARGUMENT: return "invalid argument";
     case PILOT_NO_MEMORY: return "out of memory";
-    case PILOT_DISCONNECTED: return "D-Bus disconnected";
-    case PILOT_TIMEOUT: return "D-Bus timeout (execution outcome may be unknown)";
-    case PILOT_NOT_SUPPORTED: return "service or method unavailable";
-    case PILOT_ACCESS_DENIED: return "D-Bus access denied";
-    case PILOT_REMOTE_ERROR: return "remote D-Bus error";
+    case PILOT_DISCONNECTED: return "device service connection lost";
+    case PILOT_TIMEOUT: return "request timeout (execution outcome may be unknown)";
+    case PILOT_NOT_SUPPORTED: return "capability unavailable";
+    case PILOT_ACCESS_DENIED: return "access denied";
+    case PILOT_REMOTE_ERROR: return "device service error";
     case PILOT_BAD_REPLY: return "incompatible or invalid reply";
     default: return "unknown error";
     }
+}
+
+size_t pilot_properties_count(const pilot_properties *p)
+{
+    const pilot_value *v = (const pilot_value *)p;
+    return v ? v->count : 0;
+}
+const char *pilot_properties_key(const pilot_properties *p, size_t i)
+{
+    const pilot_value *entry = pilot_value_at((const pilot_value *)p, i);
+    const pilot_value *key = pilot_value_at(entry, 0);
+    return key && key->type == 's' ? key->as.string : NULL;
+}
+bool pilot_properties_bool(const pilot_properties *p, const char *key, bool *out)
+{
+    const pilot_value *v = pilot_dict_get((const pilot_value *)p, key);
+    if (!v || !out || v->type != 'b') return false;
+    *out = v->as.boolean; return true;
+}
+bool pilot_properties_int(const pilot_properties *p, const char *key, int64_t *out)
+{
+    const pilot_value *v = pilot_dict_get((const pilot_value *)p, key);
+    if (!v || !out) return false;
+    switch (v->type) {
+    case 'n': *out = v->as.i16; return true;
+    case 'i': *out = v->as.i32; return true;
+    case 'x': *out = v->as.i64; return true;
+    default: return false;
+    }
+}
+bool pilot_properties_uint(const pilot_properties *p, const char *key, uint64_t *out)
+{
+    const pilot_value *v = pilot_dict_get((const pilot_value *)p, key);
+    if (!v || !out) return false;
+    switch (v->type) {
+    case 'y': *out = v->as.byte; return true;
+    case 'q': *out = v->as.u16; return true;
+    case 'u': *out = v->as.u32; return true;
+    case 't': *out = v->as.u64; return true;
+    default: return false;
+    }
+}
+bool pilot_properties_double(const pilot_properties *p, const char *key, double *out)
+{
+    const pilot_value *v = pilot_dict_get((const pilot_value *)p, key);
+    if (!v || !out || v->type != 'd') return false;
+    *out = v->as.real; return true;
+}
+bool pilot_properties_string(const pilot_properties *p, const char *key, const char **out)
+{
+    const pilot_value *v = pilot_dict_get((const pilot_value *)p, key);
+    if (!v || !out || v->type != 's') return false;
+    *out = v->as.string; return true;
 }
