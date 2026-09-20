@@ -1,0 +1,8 @@
+/build/
+/dist/
+/toolchain/*.tar.gz
+/toolchain/*.sha256
+/vendor/dbus/
+/__pycache__/
+*.pyc
+/examples/monitor/pilot-monitor

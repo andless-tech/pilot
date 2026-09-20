@@ -1,0 +1,954 @@
+{
+  "schema_version": 1,
+  "services": [
+    {
+      "key": "rtc",
+      "name": "tech.andless.RealTimeComm",
+      "path": "/tech/andless/RealTimeComm/Status",
+      "interface": "tech.andless.RealTimeComm.Status1",
+      "methods": [
+        {
+          "name": "BatteryCommand",
+          "args": [
+            {
+              "name": "request",
+              "type": "s",
+              "direction": "in"
+            },
+            {
+              "name": "response",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetActiveEndpoint",
+          "args": [
+            {
+              "name": "index",
+              "type": "i",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetCloudStatus",
+          "args": [
+            {
+              "name": "type",
+              "type": "s",
+              "direction": "out"
+            },
+            {
+              "name": "connected",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "ip",
+              "type": "s",
+              "direction": "out"
+            },
+            {
+              "name": "port",
+              "type": "q",
+              "direction": "out"
+            },
+            {
+              "name": "subscribeCount",
+              "type": "i",
+              "direction": "out"
+            },
+            {
+              "name": "isActive",
+              "type": "b",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetP2PStatus",
+          "args": [
+            {
+              "name": "type",
+              "type": "s",
+              "direction": "out"
+            },
+            {
+              "name": "connected",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "ip",
+              "type": "s",
+              "direction": "out"
+            },
+            {
+              "name": "port",
+              "type": "q",
+              "direction": "out"
+            },
+            {
+              "name": "subscribeCount",
+              "type": "i",
+              "direction": "out"
+            },
+            {
+              "name": "isActive",
+              "type": "b",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetAllStatus",
+          "args": [
+            {
+              "name": "endpoints",
+              "type": "a(sbsqib)",
+              "direction": "out"
+            },
+            {
+              "name": "activeIndex",
+              "type": "i",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetControlSignals",
+          "args": [
+            {
+              "name": "signals",
+              "type": "ai",
+              "direction": "out"
+            },
+            {
+              "name": "lastRxMs",
+              "type": "x",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "SetChannelOutput",
+          "args": [
+            {
+              "name": "channel",
+              "type": "i",
+              "direction": "in"
+            },
+            {
+              "name": "value",
+              "type": "i",
+              "direction": "in"
+            },
+            {
+              "name": "applied",
+              "type": "b",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetImuData",
+          "args": [
+            {
+              "name": "lastSampleMs",
+              "type": "x",
+              "direction": "out"
+            },
+            {
+              "name": "valid",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "gyroX",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "gyroY",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "gyroZ",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "accelX",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "accelY",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "accelZ",
+              "type": "d",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetDeviceParam",
+          "args": [
+            {
+              "name": "lastUpdateMs",
+              "type": "x",
+              "direction": "out"
+            },
+            {
+              "name": "hasImu",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "gyroX",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "gyroY",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "gyroZ",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "accelX",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "accelY",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "accelZ",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "temperature",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "memoryUsage",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "cpuUsage",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "diskUsage",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "batteryPercent",
+              "type": "i",
+              "direction": "out"
+            },
+            {
+              "name": "voltage",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "rssiDbm",
+              "type": "i",
+              "direction": "out"
+            },
+            {
+              "name": "hasGps",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "latitude",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "longitude",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "altitude",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "gpsSatellites",
+              "type": "i",
+              "direction": "out"
+            },
+            {
+              "name": "hdop",
+              "type": "d",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetMagnetometerData",
+          "args": [
+            {
+              "name": "lastUpdateMs",
+              "type": "x",
+              "direction": "out"
+            },
+            {
+              "name": "valid",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "xMicrotesla",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "yMicrotesla",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "zMicrotesla",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "magnitudeMicrotesla",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "sequence",
+              "type": "t",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetCellLocation",
+          "args": [
+            {
+              "name": "state",
+              "type": "s",
+              "direction": "out"
+            },
+            {
+              "name": "valid",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "latitude",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "longitude",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "radius_m",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "age_seconds",
+              "type": "u",
+              "direction": "out"
+            },
+            {
+              "name": "detail",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetGpsStatus",
+          "args": [
+            {
+              "name": "status",
+              "type": "a{sv}",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetChannelOutputStatus",
+          "args": [
+            {
+              "name": "channels",
+              "type": "a(uuibb)",
+              "direction": "out"
+            },
+            {
+              "name": "debugActive",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "lastRemoteRxMs",
+              "type": "x",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "BeginChannelDebug",
+          "args": [
+            {
+              "name": "accepted",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "reason",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "SetChannelDebug",
+          "args": [
+            {
+              "name": "channel",
+              "type": "u",
+              "direction": "in"
+            },
+            {
+              "name": "mode",
+              "type": "u",
+              "direction": "in"
+            },
+            {
+              "name": "value",
+              "type": "i",
+              "direction": "in"
+            },
+            {
+              "name": "enabled",
+              "type": "b",
+              "direction": "in"
+            },
+            {
+              "name": "accepted",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "reason",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "ChannelDebugKeepAlive",
+          "args": [
+            {
+              "name": "active",
+              "type": "b",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "EndChannelDebug",
+          "args": [
+            {
+              "name": "ended",
+              "type": "b",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetMediaStatus",
+          "args": [
+            {
+              "name": "status",
+              "type": "a{sv}",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetAudioSpectrum",
+          "args": [
+            {
+              "name": "available",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "sampleRate",
+              "type": "u",
+              "direction": "out"
+            },
+            {
+              "name": "capturedMs",
+              "type": "x",
+              "direction": "out"
+            },
+            {
+              "name": "sequence",
+              "type": "t",
+              "direction": "out"
+            },
+            {
+              "name": "rmsDbfs",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "peakDbfs",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "levels",
+              "type": "ay",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetAudioVolume",
+          "args": [
+            {
+              "name": "available",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "inputVolume",
+              "type": "u",
+              "direction": "out"
+            },
+            {
+              "name": "outputVolume",
+              "type": "u",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "SetAudioVolume",
+          "args": [
+            {
+              "name": "target",
+              "type": "s",
+              "direction": "in"
+            },
+            {
+              "name": "volume",
+              "type": "u",
+              "direction": "in"
+            },
+            {
+              "name": "accepted",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "actualVolume",
+              "type": "u",
+              "direction": "out"
+            },
+            {
+              "name": "reason",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "CaptureCameraPreview",
+          "args": [
+            {
+              "name": "success",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "width",
+              "type": "u",
+              "direction": "out"
+            },
+            {
+              "name": "height",
+              "type": "u",
+              "direction": "out"
+            },
+            {
+              "name": "strideBytes",
+              "type": "u",
+              "direction": "out"
+            },
+            {
+              "name": "capturedMs",
+              "type": "x",
+              "direction": "out"
+            },
+            {
+              "name": "rgb565",
+              "type": "ay",
+              "direction": "out"
+            },
+            {
+              "name": "reason",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetTransportStats",
+          "args": [
+            {
+              "name": "endpoints",
+              "type": "a(sbbitttu)",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetDiagnosticStats",
+          "args": [
+            {
+              "name": "json",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetNetworkDiagnostics",
+          "args": [
+            {
+              "name": "json",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "RequestReconnect",
+          "args": [
+            {
+              "name": "endpoint",
+              "type": "s",
+              "direction": "in"
+            },
+            {
+              "name": "accepted",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "reason",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        }
+      ],
+      "signals": [
+        {
+          "name": "ControlSignalsChanged",
+          "args": [
+            {
+              "name": "signals",
+              "type": "ai",
+              "direction": "out"
+            },
+            {
+              "name": "lastRxMs",
+              "type": "x",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "ImuDataChanged",
+          "args": [
+            {
+              "name": "lastUpdateMs",
+              "type": "x",
+              "direction": "out"
+            },
+            {
+              "name": "hasImu",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "gyroX",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "gyroY",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "gyroZ",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "accelX",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "accelY",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "accelZ",
+              "type": "d",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "MagnetometerDataChanged",
+          "args": [
+            {
+              "name": "lastUpdateMs",
+              "type": "x",
+              "direction": "out"
+            },
+            {
+              "name": "valid",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "xMicrotesla",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "yMicrotesla",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "zMicrotesla",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "magnitudeMicrotesla",
+              "type": "d",
+              "direction": "out"
+            },
+            {
+              "name": "sequence",
+              "type": "t",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "EndpointStateChanged",
+          "args": [
+            {
+              "name": "type",
+              "type": "s",
+              "direction": "out"
+            },
+            {
+              "name": "connected",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "subscribeCount",
+              "type": "i",
+              "direction": "out"
+            },
+            {
+              "name": "isActive",
+              "type": "b",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "NetworkDiagnosticsChanged",
+          "args": [
+            {
+              "name": "json",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "selfcheck",
+      "name": "tech.andless.SelfCheck",
+      "path": "/tech/andless/SelfCheck/Report",
+      "interface": "tech.andless.SelfCheck.Report1",
+      "methods": [
+        {
+          "name": "GetReport",
+          "args": [
+            {
+              "name": "json",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "RunNow",
+          "args": [
+            {
+              "name": "accepted",
+              "type": "b",
+              "direction": "out"
+            },
+            {
+              "name": "reason",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "GetNetworkRecoveryPolicy",
+          "args": [
+            {
+              "name": "ignored",
+              "type": "b",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "SetNetworkRecoveryMode",
+          "args": [
+            {
+              "name": "mode",
+              "type": "s",
+              "direction": "in"
+            },
+            {
+              "name": "ignored",
+              "type": "b",
+              "direction": "out"
+            }
+          ]
+        }
+      ],
+      "signals": [
+        {
+          "name": "ReportChanged",
+          "args": [
+            {
+              "name": "json",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "fan",
+      "name": "tech.andless.Fan",
+      "path": "/tech/andless/Fan",
+      "interface": "tech.andless.Fan.Config1",
+      "methods": [
+        {
+          "name": "GetConfig",
+          "args": [
+            {
+              "name": "json",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        },
+        {
+          "name": "SetConfig",
+          "args": [
+            {
+              "name": "request",
+              "type": "s",
+              "direction": "in"
+            },
+            {
+              "name": "json",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        }
+      ],
+      "signals": []
+    },
+    {
+      "key": "modem",
+      "name": "tech.andless.Modem",
+      "path": "/tech/andless/Modem",
+      "interface": "tech.andless.Modem.Status1",
+      "methods": [],
+      "signals": [
+        {
+          "name": "CellInfoChanged",
+          "args": [
+            {
+              "name": "json",
+              "type": "s",
+              "direction": "out"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "source": {
+    "sdk_commit": "100758a604099cf67c72a2c6f23cc3732e33a810",
+    "realtime_commit": "fb838dc7ab59a8e0d5ec69a8bcd6cd6b9429d365",
+    "note": "Working-tree snapshot, including local changes. Not a released firmware capability guarantee.",
+    "files": {
+      "project/app/RealTimeComm_datagram/utils/tools/DBusStatusService.cpp": "e898bf91c378a20d4af680c1310b847c52629b95f77ad3f359d4b7dc6ed78e5c",
+      "project/app/selfcheck/src/dbus_pub.c": "d982a1836607f674e20e0f07b1d6c3de7b538cfdaf6d73837177b5bb0d81401c",
+      "project/app/fan_controller/src/main.c": "c7e6110b2a53881f97e2b80ab5cace500008033da980beb94ec40abbb383e64a",
+      "project/app/quectel-cm/cell_info_dbus.c": "ec0999bc9d0fdaae9354223d5f77f065df23076ca83fb52fa3d9faaa9c0fbb04"
+    }
+  }
+}
