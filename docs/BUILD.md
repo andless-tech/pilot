@@ -11,14 +11,15 @@
 
 ## 用户使用包
 
-`pilot-0.2.0-arm-sdk.tar.gz` 是二进制使用包，不包含库实现源码、私有头文件、协议清单或第三方通信头文件：
+`pilot-0.3.0-arm-sdk.tar.gz` 是二进制使用包，不包含库实现源码、私有头文件、协议清单或第三方通信头文件：
 
 ```text
 pilot/
   include/pilot/       公共业务头文件
   lib/arm/             libpilot.a、libpilot.so、libpilot.so.1
-  bin/arm/             静态/动态链接的只读示例
+  bin/arm/             只读监测示例和 LCD 示例程序
   examples/monitor/   示例源码与 Makefile
+  examples/lcd/       LCD 页面与弹窗示例源码、Makefile
   pilot.mk            用户工程编译/链接入口
   toolchain/          匹配的工具链、解包脚本
   vendor/             构建所需的私有链接依赖
@@ -38,6 +39,8 @@ sh toolchain/setup.sh
 make -C examples/monitor
 # 动态链接版本。
 make -C examples/monitor PILOT_LINK=shared OUTPUT=pilot-monitor-shared
+# LCD 菜单页、进度条与弹窗示例，默认静态链接 Pilot。
+make -C examples/lcd
 ```
 
 用户工程只需要包含这个 Makefile 片段：
@@ -99,19 +102,21 @@ make -j2
 make verify
 ```
 
-生成 `build/arm/libpilot.a`、`libpilot.so.1`、`pilot-monitor` 和 `pilot-monitor-shared`。更新源协议后，必须同时更新业务映射；生成器会拒绝遗漏的新能力。
+生成 `build/arm/libpilot.a`、`libpilot.so.1`、`pilot-monitor`、`pilot-monitor-shared` 和 `pilot-lcd`。更新源协议后，必须同时更新业务映射；生成器会拒绝遗漏的新能力。
 
 ```sh
 make TARGET=host test
 make TARGET=host SANITIZE=1 test
 make package
-python3 scripts/verify_bundle.py dist/pilot-0.2.0-arm-sdk.tar.gz
+python3 scripts/verify_bundle.py dist/pilot-0.3.0-arm-sdk.tar.gz
 ```
 
 主机测试需 `gcc`、`g++`、`pkg-config`、`libdbus-1-dev`、`dbus-daemon` 和 Python 3。测试不会操作真实开发板。[测试记录](TEST_REPORT.md) 明确区分模拟通信验证和实板测试。
 
 ## 兼容和边界
 
+0.3.0 以新增接口的形式提供 LCD 页面扩展，保留 0.2.0 的现有接口、符号版本与 `libpilot.so.1` ABI；配套显示程序需要同时更新。新增示例为 `examples/lcd`，编译输出为 `pilot-lcd`。
+
 0.2.0 收紧了公共接口，与 0.1.0 的头文件/ABI 不兼容，动态库 SONAME 提升为 `libpilot.so.1`。迁移时使用业务 API 重新编译程序，不能仅替换旧 `.so.0` 文件。
 
-这是 API 封装，不是协议保密或安全隔离：源码维护者可以看到内部实现，二进制中的字符串也可能被分析。先前已经公开的 Git 历史不会被本次修改删除。SDK 暂不提供应用上传、CPU/内存沙箱或安装服务，也不自动修改固件、烧录、提交或推送。
+这是 API 封装，不是协议保密或安全隔离：源码维护者可以看到内部实现，二进制中的字符串也可能被分析。先前已经公开的 Git 历史不会被本次修改删除。SDK 提供 USB 上传工具；安装服务和运行资源约束由配套固件提供，具体限制见 [程序上传与运行](DEPLOY.md)。SDK 不自动修改固件、烧录、提交或推送。

@@ -19,15 +19,15 @@ endif
 CPPFLAGS += -Iinclude $(DBUS_CFLAGS)
 CFLAGS += -std=c11 -O2 -g -fPIC -fvisibility=hidden -Wall -Wextra -Werror -MMD -MP
 LDFLAGS += -Wl,-z,noexecstack,-z,relro,-z,now
-LDLIBS := $(DBUS_LIBS) -pthread
+LDLIBS := $(DBUS_LIBS) -pthread -lm
 ifneq ($(SANITIZE),)
 CFLAGS += -O1 -fsanitize=address,undefined -fno-omit-frame-pointer
 LDFLAGS += -fsanitize=address,undefined
 endif
-OBJECTS := $(BUILD)/pilot.o $(BUILD)/api.o
+OBJECTS := $(BUILD)/pilot.o $(BUILD)/api.o $(BUILD)/ui.o $(BUILD)/runtime.o
 
 .PHONY: all check-generated generate test verify install package clean example
-all: $(BUILD)/libpilot.a $(BUILD)/libpilot.so.1 $(BUILD)/pilot-monitor $(BUILD)/pilot-monitor-shared
+all: $(BUILD)/libpilot.a $(BUILD)/libpilot.so.1 $(BUILD)/pilot-monitor $(BUILD)/pilot-monitor-shared $(BUILD)/pilot-lcd
 
 $(BUILD):
 	mkdir -p $@
@@ -42,6 +42,8 @@ $(BUILD)/pilot-monitor: examples/monitor/main.c $(BUILD)/libpilot.a
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $< $(BUILD)/libpilot.a $(LDLIBS) -o $@
 $(BUILD)/pilot-monitor-shared: examples/monitor/main.c $(BUILD)/libpilot.so.1
 	$(CC) -Iinclude $(CFLAGS) $(LDFLAGS) $< -L$(BUILD) -Wl,-rpath,'$$ORIGIN' -Wl,-rpath-link,$(PILOT_ROOT)/vendor/dbus/lib -lpilot -o $@
+$(BUILD)/pilot-lcd: examples/lcd/main.c $(BUILD)/libpilot.a
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $< $(BUILD)/libpilot.a $(LDLIBS) -o $@
 $(BUILD)/test-pilot: tests/test_pilot.c tests/public_calls.h $(BUILD)/libpilot.a
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $< $(BUILD)/libpilot.a $(LDLIBS) -o $@
 $(BUILD)/test-disconnect: tests/test_disconnect.c $(BUILD)/libpilot.a
@@ -53,6 +55,7 @@ generate:
 check-generated:
 	python3 scripts/generate.py --check
 test: check-generated
+	python3 tests/test_hid_cli.py
 ifeq ($(TARGET),host)
 	$(MAKE) TARGET=host SANITIZE=$(SANITIZE) $(BUILD)/test-pilot $(BUILD)/test-disconnect $(BUILD)/test-public-shared
 	g++ -std=c++11 -Wall -Wextra -Werror -Iinclude -fsyntax-only tests/public_headers.cpp

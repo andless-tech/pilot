@@ -25,12 +25,17 @@ with tempfile.TemporaryDirectory(prefix='pilot-bundle-') as temp:
                 raise SystemExit('Unsupported bundle member')
         bundle.extractall(base)
     root = base / 'pilot'
-    for name in ('src', 'protocol', 'tests', 'scripts', 'vendor/dbus/include'):
+    for name in ('src', 'protocol', 'tests', 'vendor/dbus/include'):
         assert not (root / name).exists(), f'Private implementation shipped: {name}'
     assert not list(root.rglob('transport.h')) and not list(root.rglob('interfaces.json'))
+    assert sorted(p.name for p in (root / 'scripts').iterdir()) == ['pilot-hid.py']
+    assert (root / 'docs/DEPLOY.md').is_file()
+    subprocess.run([sys.executable, 'scripts/pilot-hid.py', '--help'], cwd=root, check=True)
     env = {**os.environ, 'PILOT_TOOLCHAIN_CACHE': str(base / 'compiler')}
     subprocess.run(['sh', 'toolchain/setup.sh'], cwd=root, env=env, check=True)
     for mode in ('static', 'shared'):
+        subprocess.run(['make', '-B', '-C', 'examples/lcd', f'PILOT_LINK={mode}', f'OUTPUT=pilot-lcd-{mode}'],
+                       cwd=root, env=env, check=True)
         subprocess.run(['make', '-B', '-C', 'examples/monitor', f'PILOT_LINK={mode}', f'OUTPUT=pilot-monitor-{mode}'],
                        cwd=root, env=env, check=True)
         # Exercise automatic SDK root resolution outside the example directory.
@@ -41,7 +46,7 @@ with tempfile.TemporaryDirectory(prefix='pilot-bundle-') as temp:
                        text=True, cwd=base, env=env, check=True)
     reader = next((base / 'compiler').rglob('bin/*-readelf'))
     for mode in ('static', 'shared'):
-        for binary in (root / 'examples/monitor' / f'pilot-monitor-{mode}', base / f'consumer-{mode}'):
+        for binary in (root / 'examples/monitor' / f'pilot-monitor-{mode}', root / 'examples/lcd' / f'pilot-lcd-{mode}', base / f'consumer-{mode}'):
             output = subprocess.check_output([str(reader), '-d', str(binary)], text=True)
             needs_pilot = 'Shared library: [libpilot.so.1]' in output
             assert needs_pilot == (mode == 'shared'), output

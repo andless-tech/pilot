@@ -8,3 +8,6 @@
 /examples/monitor/pilot-monitor
 /examples/monitor/pilot-monitor-shared
 /examples/monitor/pilot-monitor-static
+/examples/lcd/pilot-lcd
+/examples/lcd/pilot-lcd-shared
+/examples/lcd/pilot-lcd-static

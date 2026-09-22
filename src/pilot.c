@@ -1,6 +1,6 @@
 #include "private/transport.h"
+#include "private/runtime.h"
 #include <dbus/dbus.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,9 +22,6 @@ struct pilot_reply {
     pilot_value root;
 };
 
-static pthread_once_t threads_once = PTHREAD_ONCE_INIT;
-static dbus_bool_t threads_ready;
-static void init_threads(void) { threads_ready = dbus_threads_init_default(); }
 static void clear_error(pilot_error *e) { if (e) memset(e, 0, sizeof(*e)); }
 static int fail(pilot_error *e, int code, const char *name, const char *message)
 {
@@ -235,8 +232,7 @@ int pilot_open_internal(const pilot_options *options, bool session_bus, pilot_cl
     if (options) opts = *options;
     if (!opts.timeout_ms) opts.timeout_ms = PILOT_DEFAULT_TIMEOUT_MS;
     if (opts.timeout_ms < 1 || opts.timeout_ms > 60000) return fail(e, PILOT_INVALID_ARGUMENT, NULL, "Invalid timeout");
-    pthread_once(&threads_once, init_threads);
-    if (!threads_ready) return fail(e, PILOT_NO_MEMORY, NULL, "D-Bus thread initialization failed");
+    if (!pilot_private_init_threads()) return fail(e, PILOT_NO_MEMORY, NULL, "D-Bus thread initialization failed");
     pilot_client *c = calloc(1, sizeof(*c));
     if (!c) return fail(e, PILOT_NO_MEMORY, NULL, NULL);
     c->options = opts;
@@ -433,6 +429,7 @@ const char *pilot_status_string(int status)
     case PILOT_ACCESS_DENIED: return "access denied";
     case PILOT_REMOTE_ERROR: return "device service error";
     case PILOT_BAD_REPLY: return "incompatible or invalid reply";
+    case PILOT_BUSY: return "resource or update budget busy";
     default: return "unknown error";
     }
 }

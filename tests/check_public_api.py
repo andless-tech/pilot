@@ -8,7 +8,7 @@ import sys
 
 root = Path(__file__).resolve().parents[1]
 headers = '\n'.join(p.read_text() for p in (root / 'include/pilot').glob('*.h'))
-public_files = list((root / 'include').rglob('*.h')) + [root / 'examples/monitor/main.c']
+public_files = list((root / 'include').rglob('*.h')) + list((root / 'examples').rglob('main.c'))
 for path in public_files:
     text = path.read_text()
     for token in ('tech.andless', 'PILOT_METHOD_', 'PILOT_SIGNAL_', 'pilot_reply', 'pilot_value',

@@ -17,7 +17,7 @@ endif
 PILOT_CPPFLAGS := -I$(PILOT_ROOT)/include
 ifeq ($(PILOT_LINK),static)
 PILOT_LIBRARY := $(PILOT_LIBDIR)/libpilot.a
-PILOT_LDLIBS := $(PILOT_LIBRARY) $(PILOT_PRIVATE_LIBS)
+PILOT_LDLIBS := $(PILOT_LIBRARY) $(PILOT_PRIVATE_LIBS) -lm
 else ifeq ($(PILOT_LINK),shared)
 PILOT_LIBRARY := $(PILOT_LIBDIR)/libpilot.so.1
 PILOT_LDLIBS := -L$(PILOT_LIBDIR) -Wl,-rpath-link,$(PILOT_ROOT)/vendor/dbus/lib -lpilot

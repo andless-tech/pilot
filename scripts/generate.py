@@ -218,6 +218,8 @@ def render():
     for key in SIGNALS.values():
         tests.append(f'    assert(pilot_watch_{key}(client, enable ? public_on_{key} : NULL, public_event_counts, &error) == PILOT_OK);')
     tests += ['}']
+    ui_header = (ROOT / 'include/pilot/ui.h').read_text(encoding='utf-8')
+    exports += re.findall(r'PILOT_API\s+\w+\s+(pilot_ui_\w+)\(', ui_header)
     export_map = ['PILOT_0.2 {', '  global:'] + [f'    {name};' for name in sorted(exports)] + ['  local: *;', '};']
     return {ROOT / path: '\n'.join(lines).rstrip() + '\n' for path, lines in (
         ('include/pilot/api.h', header), ('src/api.c', source), ('src/private/protocol.h', private),

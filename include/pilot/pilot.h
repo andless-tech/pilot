@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-#define PILOT_VERSION "0.2.0"
+#define PILOT_VERSION "0.3.0"
 #define PILOT_DEFAULT_TIMEOUT_MS 2000
 typedef struct pilot_client pilot_client;
 typedef struct pilot_properties pilot_properties;
@@ -21,7 +21,8 @@ typedef struct pilot_properties pilot_properties;
 typedef enum {
     PILOT_OK = 0, PILOT_INVALID_ARGUMENT = -1, PILOT_NO_MEMORY = -2,
     PILOT_DISCONNECTED = -3, PILOT_TIMEOUT = -4, PILOT_NOT_SUPPORTED = -5,
-    PILOT_ACCESS_DENIED = -6, PILOT_REMOTE_ERROR = -7, PILOT_BAD_REPLY = -8
+    PILOT_ACCESS_DENIED = -6, PILOT_REMOTE_ERROR = -7, PILOT_BAD_REPLY = -8,
+    PILOT_BUSY = -9
 } pilot_status;
 typedef struct { int code; char message[384]; } pilot_error;
 typedef struct { int timeout_ms; } pilot_options;
